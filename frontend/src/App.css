@@ -1,0 +1,105 @@
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f4f6f9;
+}
+
+.dashboard{
+  display:flex;
+  height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+  width:220px;
+  background:#2c3e50;
+  color:white;
+  padding:20px;
+}
+
+.sidebar h2{
+  margin-bottom:30px;
+}
+
+.sidebar ul{
+  list-style:none;
+  padding:0;
+}
+
+.sidebar li{
+  margin:15px 0;
+  cursor:pointer;
+}
+
+/* MAIN */
+
+.main{
+  flex:1;
+  padding:20px;
+}
+
+/* HEADER */
+
+.topbar{
+  margin-bottom:20px;
+}
+
+/* STATS */
+
+.stats{
+  display:flex;
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.card-stat{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  width:200px;
+}
+
+/* FORM */
+
+.form-container{
+  display:flex;
+  gap:10px;
+  margin-bottom:30px;
+}
+
+.form-container input{
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+.form-container button{
+  background:#3498db;
+  border:none;
+  color:white;
+  padding:10px 15px;
+  border-radius:8px;
+}
+
+/* PRODUCTS */
+
+.products{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.buttons{
+  margin-top:10px;
+  display:flex;
+  gap:10px;
+}
