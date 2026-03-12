@@ -3,6 +3,7 @@ import axios from "axios";
 import "./App.css";
 
 const API = "https://pwa-2-3ucw.onrender.com";
+const OFFLINE_QUEUE = "offline_products";
 
 function App() {
 
@@ -12,7 +13,15 @@ function App() {
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
+
     obtenerProductos();
+
+    window.addEventListener("online", sincronizarOffline);
+
+    return () => {
+      window.removeEventListener("online", sincronizarOffline);
+    };
+
   }, []);
 
   const obtenerProductos = async () => {
@@ -38,23 +47,74 @@ function App() {
 
   };
 
+  const sincronizarOffline = async () => {
+
+    const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE));
+
+    if (!queue || queue.length === 0) return;
+
+    for (const product of queue) {
+
+      try {
+
+        await axios.post(`${API}/products`, product);
+
+      } catch (error) {
+
+        console.log("Error sincronizando:", error);
+        return;
+
+      }
+
+    }
+
+    localStorage.removeItem(OFFLINE_QUEUE);
+
+    obtenerProductos();
+
+  };
+
   const guardarProducto = async () => {
+
+    const nuevo = {
+      nombre,
+      precio
+    };
+
+    // si no hay internet
+    if (!navigator.onLine) {
+
+      const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE)) || [];
+
+      queue.push(nuevo);
+
+      localStorage.setItem(OFFLINE_QUEUE, JSON.stringify(queue));
+
+      const cached = JSON.parse(localStorage.getItem("products")) || [];
+
+      cached.push({
+        _id: Date.now(),
+        ...nuevo
+      });
+
+      localStorage.setItem("products", JSON.stringify(cached));
+
+      setProducts(cached);
+
+      resetForm();
+
+      return;
+    }
 
     try {
 
       if (editId) {
 
-        await axios.put(`${API}/products/${editId}`, {
-          nombre,
-          precio
-        });
+        await axios.put(`${API}/products/${editId}`, nuevo);
 
       } else {
 
-        await axios.post(`${API}/products`, {
-          nombre,
-          precio
-        });
+        await axios.post(`${API}/products`, nuevo);
 
       }
 
