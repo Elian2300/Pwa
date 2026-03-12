@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
+const API = "https://TU-BACKEND.onrender.com";
+
 function App() {
 
   const [products, setProducts] = useState([]);
@@ -17,18 +19,14 @@ function App() {
 
     if (navigator.onLine) {
 
-      axios.get("/products")
+      axios.get(`${API}/products`)
         .then(res => {
 
           setProducts(res.data);
-
-          // guardar en cache
           localStorage.setItem("products", JSON.stringify(res.data));
 
         })
-        .catch(err => {
-
-          console.log("Error API, usando cache");
+        .catch(() => {
 
           const cachedProducts = localStorage.getItem("products");
 
@@ -75,7 +73,7 @@ function App() {
 
     if (editId) {
 
-      axios.put(`/products/${editId}`, {
+      axios.put(`${API}/products/${editId}`, {
         nombre,
         precio
       }).then(() => {
@@ -87,7 +85,7 @@ function App() {
 
     } else {
 
-      axios.post("/products", {
+      axios.post(`${API}/products`, {
         nombre,
         precio
       }).then(() => {
@@ -103,7 +101,7 @@ function App() {
 
   const eliminarProducto = (id) => {
 
-    axios.delete(`/products/${id}`)
+    axios.delete(`${API}/products/${id}`)
       .then(() => obtenerProductos());
 
   };
@@ -195,6 +193,7 @@ function App() {
               <p>${product.precio}</p>
 
               <div className="buttons">
+
                 <button onClick={() => editarProducto(product)}>
                   Editar
                 </button>
@@ -202,6 +201,7 @@ function App() {
                 <button onClick={() => eliminarProducto(product._id)}>
                   Eliminar
                 </button>
+
               </div>
 
             </div>
