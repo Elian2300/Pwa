@@ -91,7 +91,7 @@ function App() {
 };
 
   const eliminarProducto = (id) => {
-    axios.delete(`https://pwa-pxbx.onrender.com/products/${id}``)
+    axios.delete(`https://pwa-pxbx.onrender.com/products/${id}`)
       .then(() => obtenerProductos());
   };
 
