@@ -16,7 +16,7 @@ function App() {
 
   if (navigator.onLine) {
 
-    axios.get("https://pwa-pxbx.onrender.com/products")
+    axios.get("/products")
       .then(res => {
 
         setProducts(res.data);
@@ -64,7 +64,7 @@ function App() {
 
   if (editId) {
 
-    axios.put(`https://pwa-pxbx.onrender.com/products/${editId}`, {
+    axios.put(`/products}`, {
       nombre,
       precio
     }).then(() => {
@@ -76,7 +76,7 @@ function App() {
 
   } else {
 
-    axios.post("https://pwa-pxbx.onrender.com/products", {
+    axios.post("/products", {
       nombre,
       precio
     }).then(() => {
@@ -91,7 +91,7 @@ function App() {
 };
 
   const eliminarProducto = (id) => {
-    axios.delete(`https://pwa-pxbx.onrender.com/products/${id}`)
+    axios.delete(`axios.get("/products")`)
       .then(() => obtenerProductos());
   };
 
