@@ -170,8 +170,8 @@ function App() {
         <ul>
           <li>📊 Dashboard</li>
           <li>📦 Productos</li>
-          <li>🧾 Pedidos</li>
-          <li>👤 Usuarios</li>
+         
+         
         </ul>
       </aside>
 
