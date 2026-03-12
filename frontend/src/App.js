@@ -3,6 +3,7 @@ import axios from "axios";
 import "./App.css";
 
 function App() {
+
   const [products, setProducts] = useState([]);
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
@@ -14,181 +15,207 @@ function App() {
 
   const obtenerProductos = () => {
 
-  if (navigator.onLine) {
+    if (navigator.onLine) {
 
-    axios.get("/products")
-      .then(res => {
+      axios.get("/products")
+        .then(res => {
 
-        setProducts(res.data);
+          setProducts(res.data);
 
-        // guardar en cache
-        localStorage.setItem("products", JSON.stringify(res.data));
+          // guardar en cache
+          localStorage.setItem("products", JSON.stringify(res.data));
 
-      });
+        })
+        .catch(err => {
 
-  } else {
+          console.log("Error API, usando cache");
 
-    // leer cache
-    const cachedProducts = localStorage.getItem("products");
+          const cachedProducts = localStorage.getItem("products");
 
-    if (cachedProducts) {
-      setProducts(JSON.parse(cachedProducts));
+          if (cachedProducts) {
+            setProducts(JSON.parse(cachedProducts));
+          }
+
+        });
+
+    } else {
+
+      const cachedProducts = localStorage.getItem("products");
+
+      if (cachedProducts) {
+        setProducts(JSON.parse(cachedProducts));
+      }
+
     }
 
-  }
-
-};
+  };
 
   const guardarProducto = () => {
 
-  if (!navigator.onLine) {
+    if (!navigator.onLine) {
 
-    const cached = JSON.parse(localStorage.getItem("products")) || [];
+      const cached = JSON.parse(localStorage.getItem("products")) || [];
 
-    const nuevo = {
-      _id: Date.now(),
-      nombre,
-      precio
-    };
+      const nuevo = {
+        _id: Date.now(),
+        nombre,
+        precio
+      };
 
-    cached.push(nuevo);
+      cached.push(nuevo);
 
-    localStorage.setItem("products", JSON.stringify(cached));
+      localStorage.setItem("products", JSON.stringify(cached));
 
-    setProducts(cached);
-
-    resetForm();
-
-    return;
-  }
-
-  if (editId) {
-
-    axios.put(`/products}`, {
-      nombre,
-      precio
-    }).then(() => {
+      setProducts(cached);
 
       resetForm();
-      obtenerProductos();
 
-    });
+      return;
+    }
 
-  } else {
+    if (editId) {
 
-    axios.post("/products", {
-      nombre,
-      precio
-    }).then(() => {
+      axios.put(`/products/${editId}`, {
+        nombre,
+        precio
+      }).then(() => {
 
-      resetForm();
-      obtenerProductos();
+        resetForm();
+        obtenerProductos();
 
-    });
+      });
 
-  }
+    } else {
 
-};
+      axios.post("/products", {
+        nombre,
+        precio
+      }).then(() => {
+
+        resetForm();
+        obtenerProductos();
+
+      });
+
+    }
+
+  };
 
   const eliminarProducto = (id) => {
-    axios.delete(`axios.get("/products")`)
+
+    axios.delete(`/products/${id}`)
       .then(() => obtenerProductos());
+
   };
 
   const editarProducto = (product) => {
+
     setNombre(product.nombre);
     setPrecio(product.precio);
     setEditId(product._id);
+
   };
 
   const resetForm = () => {
+
     setNombre("");
     setPrecio("");
     setEditId(null);
+
   };
 
   return (
-  <div className="dashboard">
 
-    <aside className="sidebar">
-      <h2>🛒 Americaton</h2>
+    <div className="dashboard">
 
-      <ul>
-        <li>📊 Dashboard</li>
-        <li>📦 Productos</li>
-        <li>🧾 Pedidos</li>
-        <li>👤 Usuarios</li>
-      </ul>
-    </aside>
+      <aside className="sidebar">
+        <h2>🛒 Americaton</h2>
 
-    <main className="main">
+        <ul>
+          <li>📊 Dashboard</li>
+          <li>📦 Productos</li>
+          <li>🧾 Pedidos</li>
+          <li>👤 Usuarios</li>
+        </ul>
+      </aside>
 
-      <header className="topbar">
-        <h1>Panel de administración</h1>
-      </header>
+      <main className="main">
 
-      <div className="stats">
+        <header className="topbar">
+          <h1>Panel de administración</h1>
+        </header>
 
-        <div className="card-stat">
-          <h3>Total productos</h3>
-          <p>{products.length}</p>
+        <div className="stats">
+
+          <div className="card-stat">
+            <h3>Total productos</h3>
+            <p>{products.length}</p>
+          </div>
+
+          <div className="card-stat">
+            <h3>Ventas</h3>
+            <p>$0</p>
+          </div>
+
+          <div className="card-stat">
+            <h3>Pedidos</h3>
+            <p>0</p>
+          </div>
+
         </div>
 
-        <div className="card-stat">
-          <h3>Ventas</h3>
-          <p>$0</p>
+        <div className="form-container">
+
+          <input
+            placeholder="Nombre del producto"
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+          />
+
+          <input
+            placeholder="Precio"
+            type="number"
+            value={precio}
+            onChange={e => setPrecio(e.target.value)}
+          />
+
+          <button onClick={guardarProducto}>
+            {editId ? "Actualizar" : "Agregar"}
+          </button>
+
         </div>
 
-        <div className="card-stat">
-          <h3>Pedidos</h3>
-          <p>0</p>
-        </div>
+        <div className="products">
 
-      </div>
+          {products.map(product => (
 
-      <div className="form-container">
+            <div className="card" key={product._id}>
 
-        <input
-          placeholder="Nombre del producto"
-          value={nombre}
-          onChange={e => setNombre(e.target.value)}
-        />
+              <h3>{product.nombre}</h3>
+              <p>${product.precio}</p>
 
-        <input
-          placeholder="Precio"
-          type="number"
-          value={precio}
-          onChange={e => setPrecio(e.target.value)}
-        />
+              <div className="buttons">
+                <button onClick={() => editarProducto(product)}>
+                  Editar
+                </button>
 
-        <button onClick={guardarProducto}>
-          {editId ? "Actualizar" : "Agregar"}
-        </button>
+                <button onClick={() => eliminarProducto(product._id)}>
+                  Eliminar
+                </button>
+              </div>
 
-      </div>
-
-      <div className="products">
-
-        {products.map(product => (
-          <div className="card" key={product._id}>
-
-            <h3>{product.nombre}</h3>
-            <p>${product.precio}</p>
-
-            <div className="buttons">
-              <button onClick={() => editarProducto(product)}>Editar</button>
-              <button onClick={() => eliminarProducto(product._id)}>Eliminar</button>
             </div>
 
-          </div>
-        ))}
+          ))}
 
-      </div>
+        </div>
 
-    </main>
+      </main>
 
-  </div>
-);
+    </div>
+
+  );
+
 }
 
 export default App;
