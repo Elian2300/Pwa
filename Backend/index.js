@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+require("dotenv").config();
 
 const productRoutes = require("./routes/products");
 const authRoutes = require("./routes/auth");
@@ -16,11 +17,11 @@ app.use("/auth", authRoutes);
 app.use("/products", productRoutes);
 
 // conexión a Mongo
-mongoose.connect(
-"mongodb+srv://Elian123:ND6U7GIczKO9w2EL@cluster0.ts2ilbe.mongodb.net/americaton"
-)
+const mongoURL = process.env.MONGO_URL || "mongodb+srv://Elian123:ND6U7GIczKO9w2EL@cluster0.ts2ilbe.mongodb.net/americaton";
+
+mongoose.connect(mongoURL)
 .then(()=>console.log("Mongo conectado"))
-.catch(err=>console.log(err));
+.catch(err=>console.log("Error conexión Mongo:", err));
 
 // servir el frontend
 app.use(express.static(path.join(__dirname, "build")));
