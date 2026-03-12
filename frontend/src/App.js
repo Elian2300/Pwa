@@ -16,7 +16,7 @@ function App() {
 
   if (navigator.onLine) {
 
-    axios.get("http://localhost:3000/products")
+    axios.get("https://pwa-bcgn.onrender.com/products")
       .then(res => {
 
         setProducts(res.data);
@@ -64,7 +64,7 @@ function App() {
 
   if (editId) {
 
-    axios.put(`http://localhost:3000/products/${editId}`, {
+    axios.put(`https://pwa-bcgn.onrender.com/products/${editId}`, {
       nombre,
       precio
     }).then(() => {
@@ -76,7 +76,7 @@ function App() {
 
   } else {
 
-    axios.post("http://localhost:3000/products", {
+    axios.post("https://pwa-bcgn.onrender.com/products", {
       nombre,
       precio
     }).then(() => {
@@ -91,7 +91,7 @@ function App() {
 };
 
   const eliminarProducto = (id) => {
-    axios.delete(`http://localhost:3000/products/${id}`)
+    axios.delete(`https://pwa-bcgn.onrender.com/products/${id}`)
       .then(() => obtenerProductos());
   };
 
