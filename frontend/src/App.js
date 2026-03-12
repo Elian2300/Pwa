@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API = "https://TU-BACKEND.onrender.com";
+const API = "https://pwa-2-3ucw.onrender.com";
 
 function App() {
 
