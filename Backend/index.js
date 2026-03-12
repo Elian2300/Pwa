@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 // conexión Mongo
 const mongoURL =
   process.env.MONGO_URL ||
-  "mongodb+srv://Elian123:ND6U7GIczKO9w2EL@cluster0.ts2ilbe.mongodb.net/americaton";
+  "mongodb+srv://23040021_db_user:xfcvYnwuDdfjs0Uz@cluster0.8pt9fd8.mongodb.net/?appName=Cluster0";
 
 mongoose
   .connect(mongoURL)
