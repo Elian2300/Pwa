@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require("path");
 require("dotenv").config();
 
 const productRoutes = require("./routes/products");
@@ -16,19 +15,20 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/products", productRoutes);
 
-// conexión Mongo
-const mongoURL = process.env.MONGO_URL || "mongodb+srv://Elian123:ND6U7GIczKO9w2EL@cluster0.ts2ilbe.mongodb.net/americaton";
-
-mongoose.connect(mongoURL)
-.then(()=>console.log("Mongo conectado"))
-.catch(err=>console.log("Error conexión Mongo:", err));
-
-// servir frontend
-app.use(express.static(path.join(__dirname, "build")));
-
-app.get("/products", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
+// ruta de prueba
+app.get("/", (req, res) => {
+  res.send("API Americaton funcionando 🚀");
 });
+
+// conexión Mongo
+const mongoURL =
+  process.env.MONGO_URL ||
+  "mongodb+srv://Elian123:ND6U7GIczKO9w2EL@cluster0.ts2ilbe.mongodb.net/americaton";
+
+mongoose
+  .connect(mongoURL)
+  .then(() => console.log("Mongo conectado"))
+  .catch((err) => console.log("Error conexión Mongo:", err));
 
 const PORT = process.env.PORT || 3000;
 
