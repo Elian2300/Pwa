@@ -15,28 +15,18 @@ function App() {
     obtenerProductos();
   }, []);
 
-  const obtenerProductos = () => {
+  const obtenerProductos = async () => {
 
-    if (navigator.onLine) {
+    try {
 
-      axios.get(`${API}/products`)
-        .then(res => {
+      const res = await axios.get(`${API}/products`);
 
-          setProducts(res.data);
-          localStorage.setItem("products", JSON.stringify(res.data));
+      setProducts(res.data);
+      localStorage.setItem("products", JSON.stringify(res.data));
 
-        })
-        .catch(() => {
+    } catch (error) {
 
-          const cachedProducts = localStorage.getItem("products");
-
-          if (cachedProducts) {
-            setProducts(JSON.parse(cachedProducts));
-          }
-
-        });
-
-    } else {
+      console.log("Error API, usando cache");
 
       const cachedProducts = localStorage.getItem("products");
 
@@ -48,61 +38,49 @@ function App() {
 
   };
 
-  const guardarProducto = () => {
+  const guardarProducto = async () => {
 
-    if (!navigator.onLine) {
+    try {
 
-      const cached = JSON.parse(localStorage.getItem("products")) || [];
+      if (editId) {
 
-      const nuevo = {
-        _id: Date.now(),
-        nombre,
-        precio
-      };
+        await axios.put(`${API}/products/${editId}`, {
+          nombre,
+          precio
+        });
 
-      cached.push(nuevo);
+      } else {
 
-      localStorage.setItem("products", JSON.stringify(cached));
+        await axios.post(`${API}/products`, {
+          nombre,
+          precio
+        });
 
-      setProducts(cached);
+      }
 
       resetForm();
+      obtenerProductos();
 
-      return;
-    }
+    } catch (error) {
 
-    if (editId) {
-
-      axios.put(`${API}/products/${editId}`, {
-        nombre,
-        precio
-      }).then(() => {
-
-        resetForm();
-        obtenerProductos();
-
-      });
-
-    } else {
-
-      axios.post(`${API}/products`, {
-        nombre,
-        precio
-      }).then(() => {
-
-        resetForm();
-        obtenerProductos();
-
-      });
+      console.log("Error guardando producto:", error);
 
     }
 
   };
 
-  const eliminarProducto = (id) => {
+  const eliminarProducto = async (id) => {
 
-    axios.delete(`${API}/products/${id}`)
-      .then(() => obtenerProductos());
+    try {
+
+      await axios.delete(`${API}/products/${id}`);
+      obtenerProductos();
+
+    } catch (error) {
+
+      console.log("Error eliminando producto:", error);
+
+    }
 
   };
 
