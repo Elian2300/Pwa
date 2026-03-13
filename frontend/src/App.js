@@ -70,6 +70,8 @@ function App() {
 
     localStorage.removeItem(OFFLINE_QUEUE);
 
+    alert("📡 Productos offline sincronizados");
+
     obtenerProductos();
 
   };
@@ -81,7 +83,12 @@ function App() {
       precio
     };
 
-    // si no hay internet
+    if (!nombre || !precio) {
+      alert("Llena todos los campos");
+      return;
+    }
+
+    // SIN INTERNET
     if (!navigator.onLine) {
 
       const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE)) || [];
@@ -101,6 +108,8 @@ function App() {
 
       setProducts(cached);
 
+      alert("📡 Sin internet. Producto guardado localmente.");
+
       resetForm();
 
       return;
@@ -111,10 +120,12 @@ function App() {
       if (editId) {
 
         await axios.put(`${API}/products/${editId}`, nuevo);
+        alert("✏️ Producto actualizado correctamente");
 
       } else {
 
         await axios.post(`${API}/products`, nuevo);
+        alert("✅ Producto creado correctamente");
 
       }
 
@@ -124,6 +135,7 @@ function App() {
     } catch (error) {
 
       console.log("Error guardando producto:", error);
+      alert("❌ Error al guardar producto");
 
     }
 
@@ -131,14 +143,20 @@ function App() {
 
   const eliminarProducto = async (id) => {
 
+    if (!window.confirm("¿Seguro que quieres eliminar este producto?")) return;
+
     try {
 
       await axios.delete(`${API}/products/${id}`);
+
+      alert("🗑️ Producto eliminado");
+
       obtenerProductos();
 
     } catch (error) {
 
       console.log("Error eliminando producto:", error);
+      alert("❌ No se pudo eliminar el producto");
 
     }
 
@@ -149,6 +167,8 @@ function App() {
     setNombre(product.nombre);
     setPrecio(product.precio);
     setEditId(product._id);
+
+    alert("✏️ Editando producto: " + product.nombre);
 
   };
 
@@ -170,8 +190,6 @@ function App() {
         <ul>
           <li>📊 Dashboard</li>
           <li>📦 Productos</li>
-         
-         
         </ul>
       </aside>
 
