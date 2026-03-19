@@ -1,41 +1,45 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+const User = require("../models/User");
 
-// Registro
+// REGISTRO
 router.post("/register", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { nombre, email, password } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+    const existe = await User.findOne({ email });
 
-  const user = new User({
-    email,
-    password: hashedPassword
-  });
+    if (existe) {
+      return res.status(400).json({ message: "El usuario ya existe" });
+    }
 
-  await user.save();
-  res.json({ message: "Usuario creado" });
+    const user = new User({ nombre, email, password });
+
+    await user.save();
+
+    res.json({ message: "Usuario registrado" });
+
+  } catch (error) {
+    res.status(500).json({ message: "Error en registro" });
+  }
 });
 
-// Login
+// LOGIN
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ message: "Usuario no existe" });
+    const user = await User.findOne({ email, password });
 
-  const validPassword = await bcrypt.compare(password, user.password);
-  if (!validPassword) return res.status(400).json({ message: "Contraseña incorrecta" });
+    if (!user) {
+      return res.status(400).json({ message: "Credenciales incorrectas" });
+    }
 
-  const token = jwt.sign(
-    { id: user._id },
-    "secreto123",
-    { expiresIn: "1h" }
-  );
+    res.json({ user });
 
-  res.json({ token });
+  } catch (error) {
+    res.status(500).json({ message: "Error en login" });
+  }
 });
 
 module.exports = router;
