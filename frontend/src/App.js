@@ -10,6 +10,8 @@ const VENTAS_DATA = [
   { id: 2, fecha: "2025-03-05", monto: 850, cliente: "Súper Rápido" },
   { id: 3, fecha: "2025-03-10", monto: 3400, cliente: "MegaMart" },
   { id: 4, fecha: "2025-03-15", monto: 620, cliente: "Bodega Express" },
+  { id: 5, fecha: "2025-03-20", monto: 4100, cliente: "Bodega Aurrera" },
+  
 ];
 
 const PEDIDOS_DATA = [
@@ -41,12 +43,6 @@ function ProductosDashboard() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-  useEffect(() => {
-    obtenerProductos();
-    window.addEventListener("online", sincronizarOffline);
-    return () => window.removeEventListener("online", sincronizarOffline);
-  }, []);
-
   const obtenerProductos = async () => {
     try {
       const res = await axios.get(`${API}/products`);
@@ -58,59 +54,113 @@ function ProductosDashboard() {
     }
   };
 
-  const sincronizarOffline = async () => {
-    const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE));
-    if (!queue || queue.length === 0) return;
-    for (const product of queue) {
-      try { await axios.post(`${API}/products`, product); } catch { return; }
-    }
-    localStorage.removeItem(OFFLINE_QUEUE);
-    showToast("📡 Productos offline sincronizados");
-    obtenerProductos();
-  };
+ const sincronizarOffline = async () => {
+  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE)) || [];
 
-  const guardarProducto = async () => {
-    const nuevo = { nombre, precio };
-    if (!nombre || !precio) { showToast("⚠️ Llena todos los campos"); return; }
+  if (queue.length === 0) return;
 
-    if (!navigator.onLine) {
-      const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE)) || [];
-      queue.push(nuevo);
-      localStorage.setItem(OFFLINE_QUEUE, JSON.stringify(queue));
-      const cached = JSON.parse(localStorage.getItem("products")) || [];
-      cached.push({ _id: Date.now(), ...nuevo });
-      localStorage.setItem("products", JSON.stringify(cached));
-      setProducts(cached);
-      showToast("📡 Sin internet. Guardado localmente.");
-      resetForm(); return;
-    }
+  showToast("📡 Sincronizando...");
 
+  const pendientes = [];
+
+  for (const product of queue) {
     try {
-      if (editId) {
-        await axios.put(`${API}/products/${editId}`, nuevo);
-        showToast("✏️ Producto actualizado");
-      } else {
-        await axios.post(`${API}/products`, nuevo);
-        showToast("✅ Producto creado");
-      }
-      resetForm(); obtenerProductos();
-    } catch { showToast("❌ Error al guardar"); }
-  };
+      await axios.post(`${API}/products`, product);
+    } catch {
+      pendientes.push(product);
+    }
+  }
+
+  localStorage.setItem(OFFLINE_QUEUE, JSON.stringify(pendientes));
+
+  if (pendientes.length === 0) {
+    showToast("✅ Todo sincronizado");
+  } else {
+    showToast("⚠️ Algunos fallaron");
+  }
+
+  // 🔥 LIMPIAR COLA OFFLINE
+localStorage.removeItem(OFFLINE_QUEUE);
+
+// 🔥 BORRAR SOLO LOS OFFLINE VISUALES
+const cached = JSON.parse(localStorage.getItem("products")) || [];
+const filtrados = cached.filter(p => !p.offline);
+
+localStorage.setItem("products", JSON.stringify(filtrados));
+
+// 🔥 TRAER DATOS REALES DEL SERVIDOR
+await obtenerProductos();
+};
+
+ const guardarProducto = async () => {
+  const nuevo = { nombre, precio: Number(precio) };
+
+  if (!nombre || !precio) {
+    showToast("⚠️ Llena todos los campos");
+    return;
+  }
+
+  try {
+    await axios.post(`${API}/products`, nuevo);
+
+    showToast("✅ Producto creado");
+    resetForm();
+    obtenerProductos();
+
+  } catch (error) {
+    console.error("❌ Error real:", error.message);
+
+    // 🔴 OFFLINE
+    const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE)) || [];
+    queue.push(nuevo);
+    localStorage.setItem(OFFLINE_QUEUE, JSON.stringify(queue));
+
+    const cached = JSON.parse(localStorage.getItem("products")) || [];
+
+    cached.push({
+      _id: Date.now(),
+      ...nuevo,
+      offline: true // 🔥 IMPORTANTE
+    });
+
+    localStorage.setItem("products", JSON.stringify(cached));
+    setProducts(cached);
+
+    showToast("📡 Guardado offline");
+    resetForm();
+  }
+};
 
   const eliminarProducto = async (id) => {
     if (!window.confirm("¿Eliminar este producto?")) return;
     try {
       await axios.delete(`${API}/products/${id}`);
-      showToast("🗑️ Producto eliminado"); obtenerProductos();
+      showToast("🗑️ Producto eliminado");
+      obtenerProductos();
     } catch { showToast("❌ No se pudo eliminar"); }
   };
 
   const editarProducto = (p) => {
-    setNombre(p.nombre); setPrecio(p.precio); setEditId(p._id);
+    setNombre(p.nombre);
+    setPrecio(p.precio);
+    setEditId(p._id);
     showToast("✏️ Editando: " + p.nombre);
   };
 
   const resetForm = () => { setNombre(""); setPrecio(""); setEditId(null); };
+
+  // 🔥 CORREGIDO: ahora sí abajo
+  useEffect(() => {
+    obtenerProductos();
+
+    window.addEventListener("online", sincronizarOffline);
+
+    if (navigator.onLine) {
+      sincronizarOffline();
+    }
+
+    return () => window.removeEventListener("online", sincronizarOffline);
+  }, []);
 
   const totalValor = products.reduce((s, p) => s + Number(p.precio || 0), 0);
 
