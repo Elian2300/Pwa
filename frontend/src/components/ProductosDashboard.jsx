@@ -156,7 +156,7 @@ sincronizandoRef.current = true;
     window.addEventListener("online", sincronizarOffline);
 
     return () => window.removeEventListener("online", sincronizarOffline);
-  }, []);
+  }, );
 
   const totalValor = products.reduce((s, p) => s + Number(p.precio || 0), 0);
 
